@@ -8,6 +8,7 @@ class TeacherClient(Client):
         super().__init__()
 
     def get_img(self, data, func, *args):
-        img, addr = self.udp_client.recvfrom(int(data.decode()))
+        len = int(data[:10].decode())
+        img = data[10:len + 10]
         img = Image.open(BytesIO(img))
         func(img, *args)

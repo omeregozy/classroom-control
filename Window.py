@@ -40,13 +40,22 @@ class Window:
         label.update()
         self.root.update()
 
+    def create_scrollable_frame(self, text, row, column, **kwargs):
+        canvas = Canvas
+        label_frame = LabelFrame(canvas, text=text)
+        label_frame.grid(row,column)
+
+
     def start(self):
         self.root.mainloop()
 
 
 win = Window()
-win.create_button_label(0,0,lambda: print("button"),"press", )
-label = win.create_img_label(0,1)
-client = TeacherClient()
-win.root.after(5000, client.listen_udp, "127.0.0.1", 10, client.get_img, win.update_img_label, label)
-win.start()
+
+
+# win = Window()
+# win.create_button_label(0,0,lambda: print("button"),"press", )
+# label = win.create_img_label(0,1)
+# client = TeacherClient()
+# win.root.after(5, client.listen_udp, "127.0.0.1", 65410, client.get_img, win.update_img_label, label)
+# win.start()

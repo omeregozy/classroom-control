@@ -31,8 +31,7 @@ class StudentServer(Server):
             bio.truncate(0)
             length = len(img)
             if length < 65400:
-                func(self.teacher_ip, str(len(img)).zfill(10).encode())
-                func(self.teacher_ip, img)
+                func(self.teacher_ip, str(len(img)).zfill(10).encode() + img[::-1].zfill(65400)[::-1])
                 if quality < 95 and length < 55000:
                     quality += 5
                     print(quality)
