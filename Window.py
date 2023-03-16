@@ -40,17 +40,28 @@ class Window:
         label.update()
         self.root.update()
 
-    def create_scrollable_frame(self, text, row, column, **kwargs):
-        canvas = Canvas
-        label_frame = LabelFrame(canvas, text=text)
-        label_frame.grid(row,column)
+    def create_scrollable_frame(self, height, width, row, column, **kwargs):
+        container = Frame(self.root, height=height, width=width,bg="yellow")
+        container.grid(row=row, column=column)
+        canvas = Canvas(container,relief="raised",bg="red")
+        frame = Frame(canvas, height=1000, width=20,bg="blue")
+        v = Scrollbar(container, orient='vertical', command=canvas.yview, height=height)
+        canvas.config(yscrollcommand=v.set)
+        canvas.grid(row=0,column=0)
+        v.grid(row=0,column=1)
+        frame.grid(row=0, column=0)
+        canvas.create_window(25,25,window=frame)
+        canvas.configure(scrollregion=canvas.bbox("all"))
+
 
 
     def start(self):
         self.root.mainloop()
 
 
-win = Window()
+win = Window(1000,1000)
+win.create_scrollable_frame(200,200,0,0)
+win.start()
 
 
 # win = Window()
