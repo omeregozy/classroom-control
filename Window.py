@@ -3,7 +3,6 @@ from PIL import ImageTk, Image
 import time
 from TeacherClient import *
 
-
 class Window:
     def __init__(self,width=None,height=None):
         self.root = Tk()
@@ -40,17 +39,26 @@ class Window:
         label.update()
         self.root.update()
 
-    def create_scrollable_frame(self, text, row, column, **kwargs):
-        canvas = Canvas
-        label_frame = LabelFrame(canvas, text=text)
-        label_frame.grid(row,column)
+    def create_scrollable_frame(self, row, column, width, height, **kwargs):
+        container = Frame(width=width, height=height, bg="yellow")
+        container.grid(row=row,column=column)
+        canvas = Canvas(container, bg="red", width=width, height=height, scrollregion=(0,0,1000,1000))
+        canvas.pack(side=LEFT,fill=BOTH)
+        vbar = Scrollbar(container, orient=VERTICAL)
+        vbar.pack(side=RIGHT, fill=Y)
+        vbar.config(command=canvas.yview)
+        canvas.config(yscrollcommand=vbar.set)
+        frame = Frame(canvas, width=200, height=200, bg="blue")
+        frame.grid_propagate()
 
 
     def start(self):
         self.root.mainloop()
 
 
-win = Window()
+win = Window(1000,1000)
+win.create_scrollable_frame(0,0,600,600)
+win.start()
 
 
 # win = Window()
