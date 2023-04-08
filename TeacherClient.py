@@ -10,5 +10,4 @@ class TeacherClient(Client):
     def get_img(self, data, func, *args):
         len = int(data[:10].decode())
         img = data[10:len + 10]
-        img = Image.open(BytesIO(img))
-        func(img, *args)
+        return Image.open(BytesIO(img))

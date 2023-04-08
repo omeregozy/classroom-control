@@ -5,6 +5,7 @@ class TeacherServer(Server):
     def __init__(self):
         super().__init__()
         super().open_tcp()
+        super.open_multicast()
         self.streaming = None
 
     def student_start_stream(self, client):

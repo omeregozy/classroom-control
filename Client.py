@@ -8,6 +8,7 @@ MULTICAST_GROUP = "?.?.?.?"
 
 class Client:
     def __init__(self):
+        self.tcp_client = None
         self.tcp_server = None
         self.udp_client = None
         self.multicast_client = None
@@ -21,7 +22,7 @@ class Client:
             self.udp_client.bind((ip, self.udp_port))
         while True:
             data, addr = self.udp_client.recvfrom(buffer_size)
-            handle_msg(data, *args)
+            handle_msg(data, addr, *args)
 
     def listen_multicast(self, handle_msg):
         pass
