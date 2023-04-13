@@ -20,6 +20,16 @@ class Window:
             root = self.root
         return Label(root, text=text)
 
+    def create_entry(self, root=None):
+        if root is None:
+            root = self.root
+        return Entry(root)
+
+    def create_text_entry(self, width, height, root=None):
+        if root is None:
+            root = self.root
+        return Text(root, width=width, height=height)
+
     def create_img_label(self, photo, root = None):
         if root is None:
             root = self.root
@@ -70,7 +80,6 @@ class Window:
             button = menu.index(button)
         menu.deletecommand(button)
 
-        menu.deletecommand()
     def add_or_change_photo(self, image, name):
         self.photos[name] = ImageTk.PhotoImage(image)
 
@@ -103,6 +112,9 @@ class Window:
 
     def start(self):
         self.root.mainloop()
+
+    def destroy(self):
+        self.root.destroy()
 
 # def nothing():
 #     print("nothing much")

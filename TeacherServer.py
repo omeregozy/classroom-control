@@ -16,6 +16,6 @@ class TeacherServer(Server):
         self.streaming = client
         client.send("start streaming")
 
-    def handle_student(self, client):
-        msg = client.recv(1024).decode()
-        pass
+    def new_lesson(self):
+        self.send_tcp_to_all(b"new lesson")
+
