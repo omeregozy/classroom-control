@@ -29,7 +29,7 @@ class TeacherGui(Window):
         self.buttons.append(self.create_button_label(self.send_message, text="send a message / file"))
         for i in range(len(self.buttons)):
             self.locate_widget(self.buttons[i],0,i)
-        self.locate_widget(self.screens_frame, 1, 0, columnspan=len(self.buttons))
+        self.locate_widget(self.screens_frame, 1, 0, columnspan=len(self.buttons)) 
 
 
     def send_message(self):
