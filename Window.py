@@ -148,29 +148,29 @@ class Window:
 # root.after(5000, func, entry)
 # root.mainloop()
 
-import threading
-import tkinter as tk
-
-class MyThread(threading.Thread):
-    def __init__(self, root):
-        threading.Thread.__init__(self)
-        self.root = root
-
-    def run(self):
-        # Long-running task here
-        for i in range(10):
-            # Update GUI from the thread using `after`
-            self.root.after(1000, self.update_label, i)
-
-    def update_label(self, i):
-        label.config(text=str(i))
-
-root = tk.Tk()
-
-label = tk.Label(root, text="")
-label.pack()
-
-thread = MyThread(root)
-thread.start()
-
-root.mainloop()
+# import threading
+# import tkinter as tk
+#
+# class MyThread(threading.Thread):
+#     def __init__(self, root):
+#         threading.Thread.__init__(self)
+#         self.root = root
+#
+#     def run(self):
+#         # Long-running task here
+#         for i in range(10):
+#             # Update GUI from the thread using `after`
+#             self.root.after(1000, self.update_label, i)
+#
+#     def update_label(self, i):
+#         label.config(text=str(i))
+#
+# root = tk.Tk()
+#
+# label = tk.Label(root, text="")
+# label.pack()
+#
+# thread = MyThread(root)
+# thread.start()
+#
+# root.mainloop()
