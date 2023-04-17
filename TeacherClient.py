@@ -7,7 +7,7 @@ class TeacherClient(Client):
     def __init__(self):
         super().__init__()
 
-    def get_img(self, data, func, *args):
+    def get_img(self, data, addr, handle_img):
         len = int(data[:10].decode())
         img = data[10:len + 10]
-        return Image.open(BytesIO(img))
+        handle_img(addr, Image.open(BytesIO(img)))

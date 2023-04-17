@@ -41,12 +41,7 @@ def get_screenshots(conn):
                 if quality < 95 and length < 55000:
                     quality += 5
             else:
-                if quality > 5:
                     quality -= 5
-                else:
-                    quality -= 1
-                print(length)
-                print(quality)
 
 class StudentServer(Server):
     def __init__(self, teacher_ip):
@@ -71,3 +66,4 @@ class StudentServer(Server):
 if __name__ == "__main__":
     server = StudentServer("127.0.0.1")
     server.send_screenshots()
+

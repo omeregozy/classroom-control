@@ -4,6 +4,8 @@ from TeacherClient import TeacherClient
 from PIL import Image
 import zipfile
 from io import BytesIO
+import threading
+
 
 def do_nothing():
     print("nothing")
@@ -29,7 +31,8 @@ class TeacherGui(Window):
         self.buttons.append(self.create_button_label(self.send_message, text="send a message / file"))
         for i in range(len(self.buttons)):
             self.locate_widget(self.buttons[i],0,i)
-        self.locate_widget(self.screens_frame, 1, 0, columnspan=len(self.buttons)) 
+        self.locate_widget(self.screens_frame, 1, 0, columnspan=len(self.buttons))
+        self.ip_to_screen = {}
 
 
     def send_message(self):
@@ -42,10 +45,10 @@ class TeacherGui(Window):
         comment = win.create_text_entry(40,10)
         win.locate_widget(comment, 3, 0)
         def send():
-            win.destroy()
             self.server.send_tcp_to_all(comment.get('1.0', 'end-1c').encode())
             zip_file.close()
             self.server.send_tcp_to_all(zip_data.getvalue())
+            win.destroy()
         send_button = win.create_button_label(send, text="send")
         win.locate_widget(send_button, 4, 0)
         frame, inner_frame = win.create_scrollable_frame(100,300)
@@ -63,10 +66,21 @@ class TeacherGui(Window):
         choose_file_button = win.create_button_label(choose_file_and_show, text="choose_file")
         win.locate_widget(choose_file_button, 0, 0)
 
+    def display_screens(self):
+        def display_img(img, addr):
+            if addr not in self.ip_to_screen:
+                self.ip_to_screen[addr] = self.create_img_label(addr, self.screens_inner_frame)
+            else:
+                self.update_img_label(addr, self.ip_to_screen[addr])
 
+        def handle_img(img, addr):
+            self.add_or_change_photo(img, addr)
+            self.root.after(0, display_img, [img, addr])
 
-
+        t = threading.Thread(target=self.client.listen_udp, args=[65410, self.client.get_img, handle_img])
+        t.start()
 
 
 win = TeacherGui()
+win.display_screens()
 win.start()
