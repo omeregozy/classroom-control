@@ -26,7 +26,7 @@ class Client:
             self.udp_client.bind((socket.gethostname(), self.udp_port))
         while True:
             data, addr = self.udp_client.recvfrom(buffer_size)
-            handle_msg(data, addr, *args)
+            handle_msg(data, addr[0], *args)
 
     def listen_multicast(self, buffer_size, handle_msg, *args):
         if self.multicast_client is None:

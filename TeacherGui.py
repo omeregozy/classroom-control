@@ -70,12 +70,13 @@ class TeacherGui(Window):
         def display_img(img, addr):
             if addr not in self.ip_to_screen:
                 self.ip_to_screen[addr] = self.create_img_label(addr, self.screens_inner_frame)
+                self.locate_widget(self.ip_to_screen[addr],0,0)
             else:
                 self.update_img_label(addr, self.ip_to_screen[addr])
 
-        def handle_img(img, addr):
+        def handle_img(addr, img):
             self.add_or_change_photo(img, addr)
-            self.root.after(0, display_img, [img, addr])
+            self.root.after(0, display_img, img, addr)
 
         t = threading.Thread(target=self.client.listen_udp, args=[65410, self.client.get_img, handle_img])
         t.start()
