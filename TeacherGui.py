@@ -11,7 +11,7 @@ def do_nothing():
     print("nothing")
 class TeacherGui(Window):
     def __init__(self):
-        super().__init__(1680, 1050, False)
+        super().__init__(1056, 626, False)
         self.server = TeacherServer()
         self.client = TeacherClient()
         self.add_or_change_photo(Image.open("default.png"), "default")
@@ -24,7 +24,6 @@ class TeacherGui(Window):
         # self.block_screens_button = self.create_button_label(self.server.block_screens, text = "block screens")
         # self.send_message_button = self.create_button_label(self.send_message, text = "send a message / file")
         self.buttons = []
-        self.buttons.append(self.create_button_label(do_nothing, text="start a new lesson"))
         self.buttons.append(self.create_button_label(do_nothing, text="shut off screens"))
         self.buttons.append(self.create_button_label(do_nothing,text="shut off computers"))
         self.buttons.append(self.create_button_label(do_nothing, text="block screens"))
@@ -70,7 +69,7 @@ class TeacherGui(Window):
         def display_img(img, addr):
             if addr not in self.ip_to_screen:
                 self.ip_to_screen[addr] = self.create_img_label(addr, self.screens_inner_frame)
-                self.locate_widget(self.ip_to_screen[addr],0,0)
+                self.locate_widget(self.ip_to_screen[addr], len(self.ip_to_screen)%4 - 1, int(len(self.ip_to_screen)/4 -1 ))
             else:
                 self.update_img_label(addr, self.ip_to_screen[addr])
 
