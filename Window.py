@@ -102,7 +102,7 @@ class Window:
         self.root.update()
 
     def start_function(self, func, ms=0, *args):
-        self.root.after(ms, func, args)
+        self.root.after(ms, func, *args)
 
     def open_file_dialog(self):
         return filedialog.askopenfilename()
@@ -115,62 +115,3 @@ class Window:
 
     def destroy(self):
         self.root.destroy()
-
-# def nothing():
-#     print("nothing much")
-#
-# win = Window(1680,1050)
-# win.add_or_change_photo(Image.open("default.png"),"default")
-# win.add_or_change_photo(Image.open("menu.png"), "menu")
-# frame, inner_frame = win.create_scrollable_frame(576, 1036)
-# win.locate_widget(frame,0,0)
-# menu = win.create_menu_button("menu", inner_frame)
-# menu.bind("<Enter>", lambda event : win.locate_widget(menu, event.widget.grid_info()["row"], event.widget.grid_info()["column"], sticky='NE'))
-# menu.bind("<Leave>", lambda event: win.remove_widget(menu))
-# win.add_button_to_menu(menu,"button", nothing)
-# labels = []
-# for i in range(20):
-#     for j in range(4):
-#         labels.append(win.create_img_label("default", inner_frame))
-#         win.locate_widget(labels[-1], i,j)
-#         labels[-1].bind("<Enter>", lambda event : win.locate_widget(menu, event.widget.grid_info()["row"], event.widget.grid_info()["column"], sticky='NE'))
-#         labels[-1].bind("<Leave>", lambda event: win.remove_widget(menu))
-# menu.lift()
-# win.start()
-
-# def func(entry):
-#     print("penis")
-#     while True:
-#         print(entry.get())
-# root = Tk()
-# entry = Entry(root)
-# entry.grid(row=0,column=0)
-# root.after(5000, func, entry)
-# root.mainloop()
-
-# import threading
-# import tkinter as tk
-#
-# class MyThread(threading.Thread):
-#     def __init__(self, root):
-#         threading.Thread.__init__(self)
-#         self.root = root
-#
-#     def run(self):
-#         # Long-running task here
-#         for i in range(10):
-#             # Update GUI from the thread using `after`
-#             self.root.after(1000, self.update_label, i)
-#
-#     def update_label(self, i):
-#         label.config(text=str(i))
-#
-# root = tk.Tk()
-#
-# label = tk.Label(root, text="")
-# label.pack()
-#
-# thread = MyThread(root)
-# thread.start()
-#
-# root.mainloop()

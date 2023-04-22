@@ -17,12 +17,6 @@ class TeacherGui(Window):
         self.add_or_change_photo(Image.open("default.png"), "default")
         self.add_or_change_photo(Image.open("menu.png"), "menu")
         self.screens_frame, self.screens_inner_frame = self.create_scrollable_frame(576, 1036)
-        self.screen_menu = self.create_menu_button("menu", self.screens_inner_frame)
-        # self.new_lesson_button = self.create_button_label(self.server.new_lesson, text = "start a new lesson")
-        # self.shut_off_screens_button = self.create_button_label(self.server.shut_off_screens, text = "shut off screens")
-        # self.shut_off_computers_button = self.create_button_label(self.server.shut_off_computers, text = "shut off computers")
-        # self.block_screens_button = self.create_button_label(self.server.block_screens, text = "block screens")
-        # self.send_message_button = self.create_button_label(self.send_message, text = "send a message / file")
         self.buttons = []
         self.buttons.append(self.create_button_label(do_nothing, text="shut off screens"))
         self.buttons.append(self.create_button_label(do_nothing,text="shut off computers"))
@@ -31,10 +25,12 @@ class TeacherGui(Window):
         for i in range(len(self.buttons)):
             self.locate_widget(self.buttons[i],0,i)
         self.locate_widget(self.screens_frame, 1, 0, columnspan=len(self.buttons))
-        self.ip_to_screen = {}
+        self.ip_to_screen_and_menu = {}
 
 
-    def send_message(self):
+    def send_message(self, func=None):
+        if func is None:
+            func = self.server.send_tcp_to_all
         win = Window()
         zip_data = BytesIO()
         list_of_labels = []
@@ -44,9 +40,9 @@ class TeacherGui(Window):
         comment = win.create_text_entry(40,10)
         win.locate_widget(comment, 3, 0)
         def send():
-            self.server.send_tcp_to_all(comment.get('1.0', 'end-1c').encode())
+            func(comment.get('1.0', 'end-1c').encode())
             zip_file.close()
-            self.server.send_tcp_to_all(zip_data.getvalue())
+            func(zip_data.getvalue())
             win.destroy()
         send_button = win.create_button_label(send, text="send")
         win.locate_widget(send_button, 4, 0)
@@ -66,20 +62,33 @@ class TeacherGui(Window):
         win.locate_widget(choose_file_button, 0, 0)
 
     def display_screens(self):
-        def display_img(img, addr):
-            if addr not in self.ip_to_screen:
-                self.ip_to_screen[addr] = self.create_img_label(addr, self.screens_inner_frame)
-                self.locate_widget(self.ip_to_screen[addr], len(self.ip_to_screen)%4 - 1, int(len(self.ip_to_screen)/4 -1 ))
+        def display_img(addr):
+            if addr not in self.ip_to_screen_and_menu:
+                menu = self.create_menu_button("menu", self.screens_inner_frame)
+                screen = self.create_img_label(addr, self.screens_inner_frame)
+                screen.bind("<Enter>", self.display_menu)
+                hide = lambda event : self.hide_menu(event, menu, screen)
+                screen.bind("<Leave>", hide)
+                menu.bind("<Leave>", hide)
+                self.ip_to_screen_and_menu[addr] = (screen, menu)
+                self.locate_widget(screen, len(self.ip_to_screen)%4 - 1, int(len(self.ip_to_screen)/4 -1))
             else:
-                self.update_img_label(addr, self.ip_to_screen[addr])
+                self.update_img_label(addr, self.ip_to_screen_and_menu[addr][0])
 
         def handle_img(addr, img):
             self.add_or_change_photo(img, addr)
-            self.root.after(0, display_img, img, addr)
+            self.start_function(display_img, 0, addr)
 
         t = threading.Thread(target=self.client.listen_udp, args=[65410, self.client.get_img, handle_img])
         t.start()
 
+    def display_menu(self, event):
+        info = event.widget.grid_info()
+        self.locate_widget(self.screen_menu, info["row"], info["column"], anchor="ne")
+
+    def hide_menu(self, event, menu, screen):
+        if event.widget is not menu or screen:
+            self.remove_widget(menu)
 
 win = TeacherGui()
 win.display_screens()
