@@ -8,6 +8,7 @@ from io import BytesIO
 size = (256, 144)
 cursor = Image.open("cursor.png")
 
+
 def change_size(conn):
     global size, cursor
     real_cursor = cursor
@@ -38,10 +39,11 @@ def get_screenshots(conn):
             length = len(img_file)
             if length < 65400:
                 conn.send_bytes(str(len(img_file)).zfill(10).encode() + img_file[::-1].zfill(65400)[::-1])
-                if quality < 95 and length < 55000:
+                if quality < 100 and length < 55000:
                     quality += 5
             else:
-                    quality -= 5
+                quality -= 5
+
 
 class StudentServer(Server):
     def __init__(self, teacher_ip):
@@ -64,6 +66,6 @@ class StudentServer(Server):
 
 
 if __name__ == "__main__":
-    server = StudentServer("127.0.0.1")
+    server = StudentServer("192.168.1.143")
     server.send_screenshots()
 

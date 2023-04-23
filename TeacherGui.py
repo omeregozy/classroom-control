@@ -9,6 +9,8 @@ import threading
 
 def do_nothing():
     print("nothing")
+
+
 class TeacherGui(Window):
     def __init__(self):
         super().__init__(1056, 626, False)
@@ -19,14 +21,14 @@ class TeacherGui(Window):
         self.screens_frame, self.screens_inner_frame = self.create_scrollable_frame(576, 1036)
         self.buttons = []
         self.buttons.append(self.create_button_label(do_nothing, text="shut off screens"))
-        self.buttons.append(self.create_button_label(do_nothing,text="shut off computers"))
+        self.buttons.append(self.create_button_label(do_nothing, text="shut off computers"))
         self.buttons.append(self.create_button_label(do_nothing, text="block screens"))
+        self.buttons.append(self.create_button_label(do_nothing, text="broadcast your screen"))
         self.buttons.append(self.create_button_label(self.send_message, text="send a message / file"))
         for i in range(len(self.buttons)):
             self.locate_widget(self.buttons[i],0,i)
         self.locate_widget(self.screens_frame, 1, 0, columnspan=len(self.buttons))
         self.ip_to_screen_and_menu = {}
-
 
     def send_message(self, func=None):
         if func is None:
@@ -39,6 +41,7 @@ class TeacherGui(Window):
         win.locate_widget(label, 2, 0)
         comment = win.create_text_entry(40,10)
         win.locate_widget(comment, 3, 0)
+
         def send():
             func(comment.get('1.0', 'end-1c').encode())
             zip_file.close()
@@ -48,12 +51,11 @@ class TeacherGui(Window):
         win.locate_widget(send_button, 4, 0)
         frame, inner_frame = win.create_scrollable_frame(100,300)
         win.locate_widget(frame,1,0)
+
         def choose_file_and_show():
             file_name = win.open_file_dialog()
             file_arc_name = file_name.split('/')[-1]
-            print(file_name)
             zip_file.write(file_name, file_arc_name)
-            print(file_name)
             list_of_labels.append(win.create_text_label(file_arc_name, inner_frame))
             location = len(list_of_labels) - 1
             win.locate_widget(list_of_labels[-1], location, 0)
@@ -90,6 +92,8 @@ class TeacherGui(Window):
         if event.widget is not menu or screen:
             self.remove_widget(menu)
 
-win = TeacherGui()
-win.display_screens()
-win.start()
+
+if __name__ == "__main__":
+    win = TeacherGui()
+    win.display_screens()
+    win.start()
