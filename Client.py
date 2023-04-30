@@ -5,7 +5,7 @@ import time
 TCP_PORT = 5060
 UDP_PORT = 5070
 MULTICAST_PORT = 5080
-MULTICAST_GROUP = "?.?.?.?"
+MULTICAST_GROUP = "224.0.0.151"
 
 class Client:
     def __init__(self, remote_ip=None):
@@ -31,7 +31,7 @@ class Client:
     def listen_multicast(self, buffer_size, handle_msg, *args):
         if self.multicast_client is None:
             self.multicast_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.multicast_clientbind((self.multicast_ip, self.multicast_port))
+            self.multicast_client.bind(("", self.multicast_port))
             group = socket.inet_aton(self.multicast_ip)
             mreq = struct.pack('4sL', group, socket.INADDR_ANY)
             self.multicast_client.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
@@ -54,3 +54,24 @@ class Client:
             self.open_tcp_connection()
         self.tcp_client.send(msg)
 
+
+def func():
+    #print("hey")
+    t = time.time()
+    print(t)
+    def func2():
+        print(t)
+    #func2()
+    return func2
+
+for i in range(1800):
+    t = time.time()
+    s = int(t)
+    m = int(s/60)
+    h = int(m/60)
+    d = int(h/24)
+    y = int(d/365)
+    print(f"{y}:{d%365}:{h%24}:{m%60}:{s%60}")
+    time.sleep(1)
+
+print("break!!!!!!!!")

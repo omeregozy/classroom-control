@@ -3,7 +3,13 @@ from multiprocessing import Process, Pipe
 import win32gui
 from io import BytesIO
 from PIL import ImageGrab, Image
+import threading
 
+send = True
+def stop(conn):
+    conn.recv_bytes()
+    global send
+    send = False
 def get_screenshots(conn):
     cursor = Image.open("cursor.png")
     threading.Thread(target=stop, args=[conn]).start()
@@ -29,33 +35,51 @@ def get_screenshots(conn):
             else:
                 quality -= 5
 
-
 class TeacherServer(Server):
     def __init__(self):
         super().__init__()
         super().open_tcp()
         super().open_multicast()
         self.streaming = None
+        self.conn = None
 
     def student_start_stream(self, client):
         if self.streaming is not None:
-            self.streaming.send("close stream".encode())
+            if self.streaming is self:
+                self.conn.send_bytes(b"close")
+            else:
+                self.streaming.send(b"close stream".zfill(20))
         else:
-            super().send_tcp_to_all("start listening",client)
+            super().send_tcp_to_all(b"start listening".zfill(20),client)
         self.streaming = client
-        client.send("start streaming")
+        client.send(b"start streaming")
 
     def blackout_all(self):
         self.send_tcp_to_all(b"black out".zfill(20))
 
-    def release_all(self):
+    def release_blackout_all(self):
         self.send_tcp_to_all(b"release black out".zfill(20))
 
     def blackout(self, client):
         client.send(b"black out".zfill(20))
 
-    def release(self,  client):
+    def release_blackout(self,  client):
         client.send(b"release black out".zfill(20))
 
-    def broadcast_screen(self):
-        pass
+    def control(self, client):
+        client.send(b"control".zfill(20))
+
+    def release_control(self, client):
+        client.send(b"release control".zfill(20))
+
+    def stream_screen(self):
+        def send_screenshots():
+            while self.streaming is self:
+                self.send_multicast(self.conn.recv_bytes())
+            self.conn.send_bytes(b"close")
+        self.streaming = self
+        self.conn, conn = Pipe(duplex=True)
+        Process(target=get_screenshots, args=[conn]).start()
+        threading.Thread(target=send_screenshots).start()
+
+

@@ -2,11 +2,12 @@ import socket
 import struct
 import select
 import threading
+import time
 
 TCP_PORT = 5060
 UDP_PORT = 5070
 MULTICAST_PORT = 5080
-MULTICAST_GROUP = "?.?.?.?"
+MULTICAST_GROUP = "224.0.0.151"
 
 
 class Server:
@@ -50,10 +51,12 @@ class Server:
                         if data:
                             handle_msg(client_sock, data)
                         else:
+                            handle_close(sock)
                             sock.close()
                             sockets_list.remove(sock)
                             self.clients_list.remove(sock)
                     except:
+                        handle_close(sock)
                         sock.close()
                         sockets_list.remove(sock)
                         self.clients_list.remove(sock)
@@ -68,3 +71,9 @@ class Server:
         for i in self.clients_list:
             if i not in not_to:
                 self.i.send(msg)
+
+server = Server()
+server.open_multicast()
+for i in range(1000):
+    time.sleep(0.1)
+    server.send_multicast(str(i).zfill(3).encode())

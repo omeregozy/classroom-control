@@ -77,9 +77,13 @@ class Window:
 
     def remove_button_to_menu(self, menu, button):
         if type(button) == str:
-            button = menu.index(button)
-        menu.deletecommand(button)
+            button = menu.menu.index(button)
+        menu.menu.deletecommand(button)
 
+    def change_button_in_menu(self, menu, button, text, func):
+        if type(button) == str:
+            button = menu.menu.index(button)
+        menu.menu.entryconfigure(button, label=text, command=func)
     def add_or_change_photo(self, image, name):
         self.photos[name] = ImageTk.PhotoImage(image)
 
