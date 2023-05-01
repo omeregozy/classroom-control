@@ -72,6 +72,12 @@ class TeacherServer(Server):
     def release_control(self, client):
         client.send(b"release control".zfill(20))
 
+    def stream_student(self, client):
+        client.send(b"stream".zfill(20))
+
+    def release_stream_student(self, client):
+        client.send(b"release stream".zfill(20))
+
     def stream_screen(self):
         def send_screenshots():
             while self.streaming is self:

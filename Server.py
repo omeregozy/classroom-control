@@ -71,9 +71,3 @@ class Server:
         for i in self.clients_list:
             if i not in not_to:
                 self.i.send(msg)
-
-server = Server()
-server.open_multicast()
-for i in range(1000):
-    time.sleep(0.1)
-    server.send_multicast(str(i).zfill(3).encode())

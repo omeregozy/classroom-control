@@ -50,6 +50,8 @@ class TeacherGui(Window):
             self.server.release_control(self.big_screen_client)
         self.big_screen.bind("<Button>", start_controlling_mouse)
         self.big_screen.bind("<Leave>", stop_controlling_mouse)
+        self.display_screens(self.client.listen_udp)
+        self.display_screens(self.client.listen_multicast)
     def handle_new_student(self, client):
         addr = client.getpeername()[0]
         if addr not in self.ip_to_screen_and_menu:
@@ -70,6 +72,12 @@ class TeacherGui(Window):
             self.big_screen_addr = addr
             self.big_screen_client = client
             self.replace_widget(self.screens_frame, self.big_screen)
+
+        def start_streaming():
+            self.server.stream_student(client)
+            control()
+
+
         self.add_button_to_menu(menu, "control")
 
 
@@ -86,9 +94,13 @@ class TeacherGui(Window):
         win.locate_widget(comment, 3, 0)
 
         def send():
-            func(comment.get('1.0', 'end-1c').encode())
+            text = comment.get('1.0', 'end-1c').encode()
+            func(f"text {len(text)}".zfill(20).encode())
+            func(text)
             zip_file.close()
-            func(zip_data.getvalue())
+            files = zip_data.getvalue()
+            func(f"files {len(files)}".zfill(20))
+            func(files)
             win.destroy()
         send_button = win.create_button_label(send, text="send")
         win.locate_widget(send_button, 4, 0)
@@ -106,7 +118,7 @@ class TeacherGui(Window):
         choose_file_button = win.create_button_label(choose_file_and_show, text="choose_file")
         win.locate_widget(choose_file_button, 0, 0)
 
-    def display_screens(self):
+    def display_screens(self, streaming_func):
         def display_img(addr):
             if addr not in self.ip_to_screen_and_menu:
                 menu = self.create_menu_button("menu", self.screens_inner_frame)
@@ -127,19 +139,9 @@ class TeacherGui(Window):
             self.add_or_change_photo(img, addr)
             self.start_function(display_img, 0, addr)
 
-        t = threading.Thread(target=self.client.listen_udp, args=[65410, self.client.get_img, handle_img])
+        t = threading.Thread(target=self.streaming_func, args=[65410, self.client.get_img, handle_img])
         t.start()
 
-    def display_streaming_screen(self):
-        def display_img()
-        def handle_img(addr, img):
-            if self.one_screen_addr is not None and self.one_screen_addr != addr:
-                return
-            self.add_or_change_photo(img, addr)
-            self.start_function(display_img, 0, addr)
-
-        t = threading.Thread(target=self.client.listen_udp, args=[65410, self.client.get_img, handle_img])
-        t.start()
     def display_menu(self, event, menu):
         info = event.widget.grid_info()
         self.locate_widget(menu, info["row"], info["column"], anchor="ne")
