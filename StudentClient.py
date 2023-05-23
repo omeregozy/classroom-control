@@ -7,8 +7,8 @@ import math
 
 
 class StudentClient(Client):
-    def __init__(self, teacher_ip, student_server, window):
-        super().__init__(teacher_ip)
+    def __init__(self, student_server, window):
+        super().__init__(student_server.teacher_ip)
         super().open_tcp_connection()
         self.student_server = student_server
         self.window = window
