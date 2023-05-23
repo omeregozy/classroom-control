@@ -84,6 +84,7 @@ class Window:
         if type(button) == str:
             button = menu.menu.index(button)
         menu.menu.entryconfigure(button, label=text, command=func)
+
     def add_or_change_photo(self, image, name):
         self.photos[name] = ImageTk.PhotoImage(image)
 

@@ -65,6 +65,8 @@ class StudentServer(Server):
         self.conn.send(screen_size)
 
 
+
+
 if __name__ == "__main__":
     server = StudentServer("192.168.1.143")
     server.send_screenshots()

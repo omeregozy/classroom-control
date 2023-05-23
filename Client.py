@@ -8,6 +8,7 @@ UDP_PORT = 5070
 MULTICAST_PORT = 5080
 MULTICAST_GROUP = "224.0.0.151"
 
+
 class Client:
     def __init__(self, remote_ip=None):
         self.tcp_client = None
@@ -26,7 +27,10 @@ class Client:
             self.udp_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.udp_client.bind((socket.gethostname(), self.udp_port))
         while True:
+            #print(buffer_size)
             data, addr = self.udp_client.recvfrom(buffer_size)
+            #print(data)
+            #print(addr)
             handle_msg(data, addr[0], *args)
 
     def listen_multicast(self, buffer_size, handle_msg, *args):
