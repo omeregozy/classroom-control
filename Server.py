@@ -36,7 +36,7 @@ class Server:
         if self.tcp_server is None:
             self.open_tcp()
         sockets_list = [self.tcp_server]
-        sockets_list.extand(self.clients_list)
+        sockets_list.extend(self.clients_list)
         while True:
             read_sockets, _, _ = select.select(sockets_list, [], [])
             for sock in read_sockets:

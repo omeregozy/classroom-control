@@ -74,6 +74,7 @@ class Window:
 
     def add_button_to_menu(self, menu, text, func):
         menu.menu.add_command(label=text, command=func)
+        menu.update()
 
     def remove_button_to_menu(self, menu, button):
         if type(button) == str:

@@ -57,7 +57,7 @@ class TeacherGui(Window):
         self.big_screen.bind("<Leave>", stop_controlling_mouse)
         self.display_screens(self.client.listen_udp)
         self.display_screens(self.client.listen_multicast)
-        threading.Thread(traget=self.server.listen_tcp, args=(20, self.handle_new_student, None, None)).start()
+        threading.Thread(target=self.server.listen_tcp, args=(20, self.handle_new_student, None, None)).start()
 
     def handle_new_student(self, client):
         print("client connected")
@@ -160,7 +160,7 @@ class TeacherGui(Window):
             self.add_or_change_photo(img, addr)
             self.start_function(display_img, 0, addr)
 
-        t = threading.Thread(target=self.streaming_func, args=[65410, self.client.get_img, handle_img])
+        t = threading.Thread(target=streaming_func, args=[65410, self.client.get_img, handle_img])
         t.start()
 
     def display_menu(self, event, menu):
