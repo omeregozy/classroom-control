@@ -94,7 +94,6 @@ class TeacherGui(Window):
         def release_blackout():
             self.server.release_blackout(client)
             self.change_button_in_menu(menu, "release blackout", "blackout", blackout)
-        print(menu)
         self.add_button_to_menu(menu, "control", control)
         self.add_button_to_menu(menu, "stream", start_streaming)
         self.add_button_to_menu(menu, "blackout", blackout)
