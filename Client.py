@@ -44,6 +44,7 @@ class Client:
     def open_tcp_connection(self):
         self.tcp_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tcp_client.connect((self.remote_ip, self.tcp_port))
+        print("connected")
 
     def listen_tcp(self, buffer_size, handle_msg):
         if self.tcp_client is None:
