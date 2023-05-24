@@ -4,6 +4,7 @@ from Server import Server
 from multiprocessing import Process, Pipe
 import win32gui
 from io import BytesIO
+from StudentClient import StudentClient
 
 size = (256, 144)
 cursor = Image.open("cursor.png")
@@ -69,5 +70,8 @@ class StudentServer(Server):
 
 if __name__ == "__main__":
     server = StudentServer("192.168.1.143")
-    server.send_screenshots()
+    threading.Thread(target=server.send_screenshots).start()
+    client = StudentClient(server, None)
+    client.listen_tcp(20, client.listen_to_teacher)
+
 
