@@ -6,7 +6,7 @@ import time
 
 
 class Window:
-    def __init__(self, width=None, height=None, resizable=True, zoomed=False):
+    def __init__(self, width=None, height=None, resizable=True, zoomed=False, title="Studnt Program", icon=None):
         self.photos = {}
         self.root = Tk()
         if zoomed:
@@ -14,6 +14,7 @@ class Window:
         if not (width is None and height is None):
             self.root.geometry(f"{width}x{height}")
         self.root.resizable(width=resizable, height=resizable)
+        self.root.title(title)
 
     def create_text_label(self,text, root=None):
         if root is None:

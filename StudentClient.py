@@ -41,3 +41,7 @@ class StudentClient(Client):
                 win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0,0,0)
             elif data[-1] == 3:
                 win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP, 0, 0,0,0)
+time.sleep(5)
+for i in range(1000000):
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0,0,0)
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0,0,0)
