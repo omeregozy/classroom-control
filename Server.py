@@ -23,6 +23,7 @@ class Server:
     def open_tcp(self):
         self.tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tcp_server.bind((socket.gethostname(), TCP_PORT))
+        self.tcp_server.listen()
 
     def open_udp(self):
         self.udp_server = socket.socket(socket.AF_INET,  socket.SOCK_DGRAM)
@@ -38,7 +39,7 @@ class Server:
         sockets_list = [self.tcp_server]
         sockets_list.extend(self.clients_list)
         while True:
-            read_sockets, _, _ = select.select(sockets_list, [], [])
+            read_sockets, _, _ = select.select(sockets_list, [], [],1)
             for sock in read_sockets:
                 if sock == self.tcp_server:
                     client_sock, client_address = sock.accept()

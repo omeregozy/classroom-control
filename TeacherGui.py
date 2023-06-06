@@ -31,16 +31,18 @@ class TeacherGui(Window):
         self.big_screen_client = None
         self.add_or_change_photo(Image.open("default.png"), "default")
         self.big_screen = self.create_img_label("default")
-        self.one_screen_addr = None
+        self.big_screen_addr = None
         self.streaming_func = self.client.listen_udp
 
         def send_location(event):
             self.big_screen_client.send(f"({event.x},{event.y})".zfill(20).encode())
 
         def send_press(event):
+            print("press")
             self.big_screen_client.send(f"press {event.num}".zfill(20).encode())
 
         def send_release(event):
+            print("release")
             self.big_screen_client.send(f"release press{event.num}".zfill(20).encode())
 
         def start_controlling_mouse(event):
@@ -50,7 +52,7 @@ class TeacherGui(Window):
             self.big_screen.bind("<ButtonRelease>", send_release)
 
         def stop_controlling_mouse(event):
-            self.big_screen.unbind_all()
+            self.big_screen.unbind_all("All")
             self.big_screen.bind("<Button>", start_controlling_mouse)
 
         self.big_screen.bind("<Button>", start_controlling_mouse)
@@ -63,14 +65,14 @@ class TeacherGui(Window):
         print("client connected")
         addr = client.getpeername()[0]
         if addr not in self.ip_to_screen_and_menu:
-            menu = self.create_menu_button("menu", self.screens_inner_frame)
             screen = self.create_img_label("default", self.screens_inner_frame)
+            menu = self.create_menu_button("menu", self.screens_inner_frame)
             screen.bind("<Enter>", lambda event: self.display_menu(event, menu))
             hide = lambda event: self.hide_menu(event, menu, screen)
             screen.bind("<Leave>", hide)
             menu.bind("<Leave>", hide)
             self.ip_to_screen_and_menu[addr] = (screen, menu)
-            self.locate_widget(screen, len(self.ip_to_screen) % 4 - 1, int(len(self.ip_to_screen) / 4 - 1))
+            self.locate_widget(screen, len(self.ip_to_screen_and_menu) % 4 - 1, int(len(self.ip_to_screen_and_menu) / 4 - 1))
             self.ip_to_screen_and_menu[addr] = screen, menu
         else:
             menu = self.ip_to_screen_and_menu[addr][1]
@@ -78,10 +80,11 @@ class TeacherGui(Window):
         #main_screen_and_menu = self.ip_to_screen_and_menu[addr]
 
         def control():
-            self.ip_to_screen_and_menu[addr] = self.one_screen, None
+            self.ip_to_screen_and_menu[addr] = self.big_screen, None
             self.big_screen_addr = addr
             self.big_screen_client = client
             self.replace_widget(self.screens_frame, self.big_screen)
+            self.big_screen_client.send("full screen".zfill(20).encode())
 
         def start_streaming():
             self.server.stream_student(client)
@@ -139,6 +142,7 @@ class TeacherGui(Window):
     def display_screens(self, streaming_func):
         def display_img(addr):
             if addr not in self.ip_to_screen_and_menu:
+                #self.ip_to_screen_and_menu[addr] = None
                 screen = self.create_img_label(addr, self.screens_inner_frame)
                 menu = self.create_menu_button("menu", self.screens_inner_frame)
                 screen.bind("<Enter>", lambda event : self.display_menu(event, menu))
@@ -152,7 +156,7 @@ class TeacherGui(Window):
                 self.update_img_label(addr, self.ip_to_screen_and_menu[addr][0])
 
         def handle_img(addr, img):
-            if self.one_screen_addr is not None and self.one_screen_addr != addr:
+            if self.big_screen_addr is not None and self.big_screen_addr != addr:
                 return
             if img.size[0] > 1024:
                 img.thumbnail((1024, 576))
@@ -163,10 +167,12 @@ class TeacherGui(Window):
         t.start()
 
     def display_menu(self, event, menu):
+        print("display")
         info = event.widget.grid_info()
         self.locate_widget(menu, info["row"], info["column"], sticky="ne")
 
     def hide_menu(self, event, menu, screen):
+        print("hide")
         x, y = self.root.winfo_pointerxy()
         widget_under_mouse = self.root.winfo_containing(x, y)
         if widget_under_mouse is not menu and widget_under_mouse is not screen:
