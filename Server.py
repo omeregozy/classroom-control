@@ -1,6 +1,6 @@
 import socket
 import struct
-import select
+
 import threading
 import time
 
@@ -32,35 +32,6 @@ class Server:
         self.multicast_port = MULTICAST_PORT
         self.multicast_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.multicast_server.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 3)
-
-    def listen_tcp(self, buffer_size, handle_new_client, handle_msg, handle_close):
-        if self.tcp_server is None:
-            self.open_tcp()
-        sockets_list = [self.tcp_server]
-        sockets_list.extend(self.clients_list)
-        while True:
-            read_sockets, _, _ = select.select(sockets_list, [], [],1)
-            for sock in read_sockets:
-                if sock == self.tcp_server:
-                    client_sock, client_address = sock.accept()
-                    sockets_list.append(client_sock)
-                    self.clients_list.append(client_sock)
-                    handle_new_client(client_sock)
-                else:
-                    try:
-                        data = sock.recv(buffer_size)
-                        if data:
-                            handle_msg(client_sock, data)
-                        else:
-                            handle_close(sock)
-                            sock.close()
-                            sockets_list.remove(sock)
-                            self.clients_list.remove(sock)
-                    except:
-                        handle_close(sock)
-                        sock.close()
-                        sockets_list.remove(sock)
-                        self.clients_list.remove(sock)
 
     def send_multicast(self, msg):
         self.multicast_server.sendto(msg, (self.multicast_ip, self.multicast_port))

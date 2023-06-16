@@ -4,10 +4,13 @@ from PIL import Image
 import time
 
 class TeacherClient(Client):
-    def __init__(self):
+    def __init__(self,encryption):
         super().__init__()
+        self.encryption = encryption
 
-    def get_img(self, data, addr, handle_img):
+    def get_img(self, data, addr, handle_img, decrypt):
+        if decrypt:
+            data = self.encryption.decrypt(data, addr)
         len = int(data[:10].decode())
         img = data[10:len + 10]
         handle_img(addr, Image.open(BytesIO(img)))

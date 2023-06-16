@@ -4,7 +4,9 @@ import win32gui
 from io import BytesIO
 from PIL import ImageGrab, Image
 import threading
-
+from TeacherEncryption import TeacherEncryption
+import select
+from socket import timeout
 send = True
 
 
@@ -41,33 +43,85 @@ def get_screenshots(conn):
 
 
 class TeacherServer(Server):
-    def __init__(self):
+    def __init__(self, encryption):
         super().__init__()
         super().open_tcp()
         super().open_multicast()
+        self.tcp_server.settimeout(5)
         self.streaming = None
         self.conn = None
+        self.encryption = encryption
 
+    def listen_tcp(self, buffer_size, handle_new_client, handle_close):
+        if self.tcp_server is None:
+            self.open_tcp()
+        sockets_list = [self.tcp_server]
+        sockets_list.extend(self.clients_list)
+        while True:
+            read_sockets, _, _ = select.select(sockets_list, [], [],1)
+            for sock in read_sockets:
+                if sock == self.tcp_server:
+                    client_sock, client_address = sock.accept()
+                    try:
+                        self.encryption.add_student(client_address, client_sock.recv(128))
+                        sockets_list.append(client_sock)
+                        self.clients_list.append(client_sock)
+                        handle_new_client(client_sock)
+                    except timeout:
+                        client_sock.close()
+                else:
+                    try:
+                        sock.recv(buffer_size)
+                    except:
+                        handle_close(sock)
+                        sock.close()
+                        sockets_list.remove(sock)
+                        self.clients_list.remove(sock)
+    def send_tcp_to_all(self, msg, not_to = []):
+        for i in self.clients_list:
+            if i not in not_to:
+                i.send(self.encryption.encrypt_message(msg,i.getsockname()))
+
+    def send_tcp(self, client, msg):
+        client.send(self.encryption.encrypt_message(msg, client.getsockname()))
+
+    def send_full_screen(self, client):
+        self.send_tcp(client, b"full screen")
+
+    def send_normal_screen(self, client):
+        self.send_tcp(client, b"normal screen")
+
+    def send_coordinates(self, client, x, y):
+        self.send_tcp(client, f"({x},{y})".encode())
+
+    def send_press(self,client,num):
+        self.send_tcp(client,f"press {num}".encode())
+    def send_release(self,client,num):
+        self.send_tcp(client, f"release press {num}".encode())
     def blackout_all(self):
-        self.send_tcp_to_all(b"black out".zfill(20))
+        self.send_tcp_to_all(b"black out")
 
     def release_blackout_all(self):
-        self.send_tcp_to_all(b"release black out".zfill(20))
+        self.send_tcp_to_all(b"release black out")
 
     def blackout(self, client):
-        client.send(b"black out".zfill(20))
+        self.send_tcp(client,b"black out")
 
     def release_blackout(self,  client):
-        client.send(b"release black out".zfill(20))
+        self.send_tcp(client, b"release black out")
 
     def stream_student(self, client):
         self.streaming = client
-        client.send(b"stream".zfill(20))
-        self.send_tcp_to_all(b"start listening".zfill(20), [client])
+        self.send_tcp(client,b"stream")
+        self.send_tcp_to_all(b"start listening", [client])
 
-    def release_stream_student(self):
-        self.streaming.send(b"release stream".zfill(20))
-        self.send_tcp_to_all(b"stop listening".zfill(20), [self.streaming])
+    def release_stream(self):
+        if self.streaming is self:
+            self.conn.send_bytes(b"stop")
+            self.conn = None
+        else:
+            self.send_tcp(self.streaming,b"release stream")
+        self.send_tcp_to_all(b"stop listening", [self.streaming])
         self.streaming = None
 
     def stream_screen(self):
@@ -81,5 +135,6 @@ class TeacherServer(Server):
         self.conn, conn = Pipe(duplex=True)
         Process(target=get_screenshots, args=[conn]).start()
         threading.Thread(target=send_screenshots).start()
+
 
 

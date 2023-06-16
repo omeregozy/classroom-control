@@ -16,10 +16,10 @@ class Window:
         self.root.resizable(width=resizable, height=resizable)
         self.root.title(title)
 
-    def create_text_label(self,text, root=None):
+    def create_text_label(self,text, root=None, **kwargs):
         if root is None:
             root = self.root
-        return Label(root, text=text)
+        return Label(root, text=text, **kwargs)
 
     def create_entry(self, root=None):
         if root is None:

@@ -4,7 +4,6 @@ from Server import Server
 from multiprocessing import Process, Pipe
 import win32gui
 from io import BytesIO
-from StudentClient import StudentClient
 
 size = (256, 144)
 cursor = Image.open("cursor.png")
@@ -31,15 +30,15 @@ def get_screenshots(conn):
         cursor_pos = win32gui.GetCursorPos()
         img.alpha_composite(cursor, dest=(int(cursor_pos[0] / (2048 / size[0])), int(cursor_pos[1] / (2048 / size[0])) + (2 * cursor.size[1])))
         img = img.convert("RGB")
-        length = 65401
-        while length > 65400:
+        length = 65409
+        while length > 65408:
             img.save(bio, "JPEG", quality=quality)
             bio.seek(0)
             img_file = bio.getvalue()
             bio.truncate(0)
             length = len(img_file)
-            if length < 65400:
-                conn.send_bytes(str(len(img_file)).zfill(10).encode() + img_file[::-1].zfill(65400)[::-1])
+            if length < 653998:
+                conn.send_bytes(str(len(img_file)).zfill(10).encode() + img_file[::-1].zfill(653998)[::-1])
                 if quality < 100 and length < 55000:
                     quality += 5
             else:
@@ -47,10 +46,11 @@ def get_screenshots(conn):
 
 
 class StudentServer(Server):
-    def __init__(self, teacher_ip):
+    def __init__(self, teacher_ip, encryption):
         super().__init__()
         super().open_udp()
         super().open_multicast()
+        self.encryption = encryption
         self.teacher_ip = teacher_ip
         self.send_to_teacher = lambda msg: self.send_udp(teacher_ip,msg)
         self.stream_func = self.send_to_teacher
@@ -60,18 +60,12 @@ class StudentServer(Server):
         self.conn, conn2 = Pipe(duplex=True)
         Process(target=get_screenshots, args=[conn2]).start()
         while True:
-            self.stream_func(self.conn.recv_bytes())
+            if self.stream_func is self.send_to_teacher:
+                self.stream_func(self.encryption.encrypt(self.conn.recv_bytes()))
+            else:
+                self.stream_func(self.conn.recv_bytes())
 
     def change_screenshot_size(self, screen_size):
         self.conn.send(screen_size)
-
-
-
-
-if __name__ == "__main__":
-    server = StudentServer("192.168.1.143")
-    threading.Thread(target=server.send_screenshots).start()
-    client = StudentClient(server, None)
-    client.listen_tcp(20, client.listen_to_teacher)
 
 

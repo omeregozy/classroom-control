@@ -2,9 +2,8 @@ from Window import Window
 from TeacherServer import TeacherServer
 from TeacherClient import TeacherClient
 from PIL import Image
-import zipfile
-from io import BytesIO
 import threading
+from TeacherEncryption import TeacherEncryption
 
 
 def do_nothing():
@@ -14,36 +13,33 @@ def do_nothing():
 class TeacherGui(Window):
     def __init__(self):
         super().__init__(1056, 626, False)
-        self.server = TeacherServer()
-        self.client = TeacherClient()
+        self.encryption = TeacherEncryption()
+        self.server = TeacherServer(self.encryption)
+        self.client = TeacherClient(self.encryption)
         self.add_or_change_photo(Image.open("default.png"), "default")
         self.add_or_change_photo(Image.open("menu.png"), "menu")
         self.screens_frame, self.screens_inner_frame = self.create_scrollable_frame(576, 1036)
         self.buttons = []
         self.buttons.append(self.create_button_label(self.server.blackout_all(), text="blackout all screens"))
         self.buttons.append(self.create_button_label(do_nothing, text="broadcast your screen"))
-        self.buttons.append(self.create_button_label(self.send_message, text="send a message / file"))
         for i in range(len(self.buttons)):
             self.locate_widget(self.buttons[i],0,i)
-        self.locate_widget(self.screens_frame, 1, 0, columnspan=len(self.buttons))
+        self.locate_widget(self.screens_frame, 1, 0, columnspan=len(self.buttons)+1)
         self.ip_to_screen_and_menu = {}
         self.big_screen_addr = None
         self.big_screen_client = None
         self.add_or_change_photo(Image.open("default.png"), "default")
         self.big_screen = self.create_img_label("default")
         self.big_screen_addr = None
-        self.streaming_func = self.client.listen_udp
 
         def send_location(event):
-            self.big_screen_client.send(f"({event.x},{event.y})".zfill(20).encode())
+            self.server.send_coordinates(self.big_screen_client,event.x,event.y)
 
         def send_press(event):
-            print("press")
-            self.big_screen_client.send(f"press {event.num}".zfill(20).encode())
+            self.server.send_press(self.big_screen_client,event.num)
 
         def send_release(event):
-            print("release")
-            self.big_screen_client.send(f"release press{event.num}".zfill(20).encode())
+            self.server.send_release(self.big_screen_client,event.num)
 
         def start_controlling_mouse(event):
             self.big_screen.unbind("<Button>")
@@ -57,12 +53,11 @@ class TeacherGui(Window):
 
         self.big_screen.bind("<Button>", start_controlling_mouse)
         self.big_screen.bind("<Leave>", stop_controlling_mouse)
-        self.display_screens(self.client.listen_udp)
-        self.display_screens(self.client.listen_multicast)
-        threading.Thread(target=self.server.listen_tcp, args=(20, self.handle_new_student, None, None)).start()
+        self.display_screens(self.client.listen_udp, True)
+        self.display_screens(self.client.listen_multicast, False)
+        threading.Thread(target=self.server.listen_tcp, args=(16, self.handle_new_student, self.remove_student)).start()
 
     def handle_new_student(self, client):
-        print("client connected")
         addr = client.getpeername()[0]
         if addr not in self.ip_to_screen_and_menu:
             screen = self.create_img_label("default", self.screens_inner_frame)
@@ -77,18 +72,33 @@ class TeacherGui(Window):
         else:
             menu = self.ip_to_screen_and_menu[addr][1]
 
-        #main_screen_and_menu = self.ip_to_screen_and_menu[addr]
+        main_screen_and_menu = self.ip_to_screen_and_menu[addr]
 
-        def control():
+        def return_to_shared_screen():
+            self.server.send_normal_screen(self.big_screen_client)
+            self.ip_to_screen_and_menu[addr] = main_screen_and_menu
+            self.replace_widget(self.big_screen,self.screens_frame)
+            self.big_screen_addr = addr
+            self.big_screen_client = client
+
+
+        def control(make_button=True):
             self.ip_to_screen_and_menu[addr] = self.big_screen, None
             self.big_screen_addr = addr
             self.big_screen_client = client
             self.replace_widget(self.screens_frame, self.big_screen)
-            self.big_screen_client.send("full screen".zfill(20).encode())
+            self.server.send_full_screen(self.big_screen_client)
+            if make_button:
+                button = self.create_button_label(return_to_shared_screen,text="release control")
+                self.locate_widget(button, 0, len(self.buttons))
 
         def start_streaming():
             self.server.stream_student(client)
             control()
+            return_to_shared_screen_and_release_stream = lambda a : (return_to_shared_screen(), self.server.release_stream())
+            button = self.create_button_label(return_to_shared_screen_and_release_stream, text="release stream")
+            self.locate_widget(button, 0, len(self.buttons))
+
 
         def blackout():
             self.server.blackout(client)
@@ -97,49 +107,12 @@ class TeacherGui(Window):
         def release_blackout():
             self.server.release_blackout(client)
             self.change_button_in_menu(menu, "release blackout", "blackout", blackout)
+
         self.add_button_to_menu(menu, "control", control)
         self.add_button_to_menu(menu, "stream", start_streaming)
         self.add_button_to_menu(menu, "blackout", blackout)
 
-
-    def send_message(self, func=None):
-        if func is None:
-            func = self.server.send_tcp_to_all
-        win = Window()
-        zip_data = BytesIO()
-        list_of_labels = []
-        zip_file = zipfile.ZipFile(zip_data, mode='w')
-        label = win.create_text_label("write your comment")
-        win.locate_widget(label, 2, 0)
-        comment = win.create_text_entry(40,10)
-        win.locate_widget(comment, 3, 0)
-
-        def send():
-            text = comment.get('1.0', 'end-1c').encode()
-            func(f"text {len(text)}".zfill(20).encode())
-            func(text)
-            zip_file.close()
-            files = zip_data.getvalue()
-            func(f"files {len(files)}".zfill(20))
-            func(files)
-            win.destroy()
-        send_button = win.create_button_label(send, text="send")
-        win.locate_widget(send_button, 4, 0)
-        frame, inner_frame = win.create_scrollable_frame(100,300)
-        win.locate_widget(frame,1,0)
-
-        def choose_file_and_show():
-            file_name = win.open_file_dialog()
-            file_arc_name = file_name.split('/')[-1]
-            zip_file.write(file_name, file_arc_name)
-            list_of_labels.append(win.create_text_label(file_arc_name, inner_frame))
-            location = len(list_of_labels) - 1
-            win.locate_widget(list_of_labels[-1], location, 0)
-            win.update()
-        choose_file_button = win.create_button_label(choose_file_and_show, text="choose_file")
-        win.locate_widget(choose_file_button, 0, 0)
-
-    def display_screens(self, streaming_func):
+    def display_screens(self, streaming_func, decrypt):
         def display_img(addr):
             if addr not in self.ip_to_screen_and_menu:
                 #self.ip_to_screen_and_menu[addr] = None
@@ -163,7 +136,7 @@ class TeacherGui(Window):
             self.add_or_change_photo(img, addr)
             self.start_function(display_img, 0, addr)
 
-        t = threading.Thread(target=streaming_func, args=[65410, self.client.get_img, handle_img])
+        t = threading.Thread(target=streaming_func, args=[65408, self.client.get_img, handle_img, decrypt])
         t.start()
 
     def display_menu(self, event, menu):
@@ -178,6 +151,9 @@ class TeacherGui(Window):
         if widget_under_mouse is not menu and widget_under_mouse is not screen:
             self.remove_widget(menu)
 
+    def remove_student(self, sock):
+        for i in self.ip_to_screen_and_menu[sock.getsockname()]:
+            self.remove_widget(i, True)
 
 if __name__ == "__main__":
     win = TeacherGui()
