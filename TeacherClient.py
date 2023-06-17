@@ -1,7 +1,6 @@
 from Client import Client
 from io import BytesIO
 from PIL import Image
-import time
 
 class TeacherClient(Client):
     def __init__(self,encryption):
@@ -13,4 +12,7 @@ class TeacherClient(Client):
             data = self.encryption.decrypt(data, addr)
         len = int(data[:10].decode())
         img = data[10:len + 10]
-        handle_img(addr, Image.open(BytesIO(img)))
+        try:
+            handle_img(addr, Image.open(BytesIO(img)))
+        except:
+            pass

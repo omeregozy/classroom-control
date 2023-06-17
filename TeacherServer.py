@@ -4,17 +4,15 @@ import win32gui
 from io import BytesIO
 from PIL import ImageGrab, Image
 import threading
-from TeacherEncryption import TeacherEncryption
 import select
-from socket import timeout
-send = True
 
+
+send = True
 
 def stop(conn):
     conn.recv_bytes()
     global send
     send = False
-
 
 def get_screenshots(conn):
     cursor = Image.open("cursor.png")
@@ -27,15 +25,15 @@ def get_screenshots(conn):
         cursor_pos = win32gui.GetCursorPos()
         img.alpha_composite(cursor, dest=(cursor_pos[0], cursor_pos[1]))
         img = img.convert("RGB")
-        length = 65401
-        while length > 65400:
+        length = 65409
+        while length > 65408:
             img.save(bio, "JPEG", quality=quality)
             bio.seek(0)
             img_file = bio.getvalue()
             bio.truncate(0)
             length = len(img_file)
-            if length < 65400:
-                conn.send_bytes(str(len(img_file)).zfill(10).encode() + img_file[::-1].zfill(65400)[::-1])
+            if length < 65398:
+                conn.send_bytes(str(len(img_file)).zfill(10).encode() + img_file[::-1].zfill(65398)[::-1])
                 if quality < 95 and length < 55000:
                     quality += 5
             else:
@@ -67,7 +65,7 @@ class TeacherServer(Server):
                         sockets_list.append(client_sock)
                         self.clients_list.append(client_sock)
                         handle_new_client(client_sock)
-                    except timeout:
+                    except:
                         client_sock.close()
                 else:
                     try:
@@ -98,11 +96,6 @@ class TeacherServer(Server):
         self.send_tcp(client,f"press {num}".encode())
     def send_release(self,client,num):
         self.send_tcp(client, f"release press {num}".encode())
-    def blackout_all(self):
-        self.send_tcp_to_all(b"black out")
-
-    def release_blackout_all(self):
-        self.send_tcp_to_all(b"release black out")
 
     def blackout(self, client):
         self.send_tcp(client,b"black out")
@@ -111,9 +104,10 @@ class TeacherServer(Server):
         self.send_tcp(client, b"release black out")
 
     def stream_student(self, client):
+        if self.streaming is None:
+            self.send_tcp_to_all(b"start listening", [client])
         self.streaming = client
         self.send_tcp(client,b"stream")
-        self.send_tcp_to_all(b"start listening", [client])
 
     def release_stream(self):
         if self.streaming is self:
@@ -128,9 +122,9 @@ class TeacherServer(Server):
         def send_screenshots():
             while self.streaming is self:
                 self.send_multicast(self.conn.recv_bytes())
-            self.conn.send_bytes(b"close")
-            self.send_tcp_to_all(b"stop listening".zfill(20))
-        self.send_tcp_to_all(b"start listening".zfill(20))
+            self.send_tcp_to_all(b"stop listening")
+        if self.streaming is None:
+            self.send_tcp_to_all(b"start listening")
         self.streaming = self
         self.conn, conn = Pipe(duplex=True)
         Process(target=get_screenshots, args=[conn]).start()

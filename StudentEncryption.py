@@ -19,15 +19,3 @@ class StudentEncryption:
 
     def decrypt_message(self, data):
         return unpad(self.cipher.decrypt(data),AES.block_size)
-
-files = [get_random_bytes(64000) for i in range(10000)]
-enc = StudentEncryption()
-encrypted_files = []
-t = time.time()
-for i in files:
-    encrypted_files.append(enc.encrypt_message(i))
-print(time.time()-t)
-t = time.time()
-for i in encrypted_files:
-    enc.decrypt_message(i)
-print(time.time()-t)

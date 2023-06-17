@@ -6,10 +6,6 @@ import threading
 from TeacherEncryption import TeacherEncryption
 
 
-def do_nothing():
-    print("nothing")
-
-
 class TeacherGui(Window):
     def __init__(self):
         super().__init__(1056, 626, False)
@@ -19,9 +15,14 @@ class TeacherGui(Window):
         self.add_or_change_photo(Image.open("default.png"), "default")
         self.add_or_change_photo(Image.open("menu.png"), "menu")
         self.screens_frame, self.screens_inner_frame = self.create_scrollable_frame(576, 1036)
+        self.unused_buttons = []
+        self.unused_buttons.append(self.create_button_label(self.release_blackout_all, text="unblackout all screens"))
+        self.unused_buttons.append(self.create_button_label(self.release_stream_screen, text="stop broadcasting your screen"))
         self.buttons = []
-        self.buttons.append(self.create_button_label(self.server.blackout_all(), text="blackout all screens"))
-        self.buttons.append(self.create_button_label(do_nothing, text="broadcast your screen"))
+        self.blackout_list = []
+        self.release_blackout_list = []
+        self.buttons.append(self.create_button_label(self.blackout_all, text="blackout all screens"))
+        self.buttons.append(self.create_button_label(self.stream_screen, text="broadcast your screen"))
         for i in range(len(self.buttons)):
             self.locate_widget(self.buttons[i],0,i)
         self.locate_widget(self.screens_frame, 1, 0, columnspan=len(self.buttons)+1)
@@ -101,16 +102,26 @@ class TeacherGui(Window):
 
 
         def blackout():
-            self.server.blackout(client)
-            self.change_button_in_menu(menu, "blackout", "release blackout", release_blackout)
+            try:
+                menu.menu.index("blackout")
+                self.server.blackout(client)
+                self.change_button_in_menu(menu, "blackout", "release blackout", release_blackout)
+            except ValueError:
+                pass
 
         def release_blackout():
-            self.server.release_blackout(client)
-            self.change_button_in_menu(menu, "release blackout", "blackout", blackout)
-
+            try:
+                menu.menu.index("release blackout")
+                self.server.release_blackout(client)
+                self.change_button_in_menu(menu, "release blackout", "blackout", blackout)
+            except ValueError:
+                pass
+        self.blackout_list.append(blackout)
+        self.release_blackout_list.append(release_blackout)
         self.add_button_to_menu(menu, "control", control)
         self.add_button_to_menu(menu, "stream", start_streaming)
         self.add_button_to_menu(menu, "blackout", blackout)
+
 
     def display_screens(self, streaming_func, decrypt):
         def display_img(addr):
@@ -155,6 +166,35 @@ class TeacherGui(Window):
         for i in self.ip_to_screen_and_menu[sock.getsockname()]:
             self.remove_widget(i, True)
 
+    def stop_streaming_screen(self):
+        self.server.release_stream()
+
+
+    def stream_screen(self):
+        self.server.stream_screen()
+        self.replace_widget(self.buttons[1], self.unused_buttons[1])
+        self.buttons[1], self.unused_buttons[1] = self.unused_buttons[1], self.buttons[1]
+
+    def release_stream_screen(self):
+        self.server.release_stream()
+        self.replace_widget(self.buttons[1], self.unused_buttons[1])
+        self.buttons[1], self.unused_buttons[1] = self.unused_buttons[1], self.buttons[1]
+
+    def blackout_all(self):
+        for i in self.blackout_list:
+            i()
+        self.replace_widget(self.buttons[0],self.unused_buttons[0])
+        self.buttons[0], self.unused_buttons[0] = self.unused_buttons[0], self.buttons[0]
+    def release_blackout_all(self):
+        for i in self.release_blackout_list:
+            i()
+        self.replace_widget(self.buttons[0], self.unused_buttons[0])
+        self.buttons[0], self.unused_buttons[0] = self.unused_buttons[0], self.buttons[0]
+
+
+
 if __name__ == "__main__":
+    print("started")
     win = TeacherGui()
+    print("started")
     win.start()

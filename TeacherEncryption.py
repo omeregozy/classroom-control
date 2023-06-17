@@ -33,14 +33,3 @@ class TeacherEncryption:
         while True:
             multicast_server.sendto(self.public_RSA_key, (MULTICAST_GROUP, MULTICAST_PORT))
             time.sleep(5)
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.bind(("127.0.0.1", 200))
-sock.listen()
-client, addr = sock.accept()
-enc = TeacherEncryption()
-client.send(enc.public_RSA_key)
-addr = "127.0.0.1"
-enc.add_student(addr, client.recv(2024))
-client.send(enc.encrypt_message(b"msg", "127.0.0.1"))
-print(enc.decrypt_message(client.recv(2024), "127.0.0.1"))

@@ -1,5 +1,3 @@
-import pywintypes
-
 from Window import Window
 import threading
 import win32gui
@@ -10,6 +8,7 @@ import queue
 from StudentClient import StudentClient
 from StudentServer import StudentServer
 from StudentEncryption import StudentEncryption
+
 class StudentGui(Window):
     def __init__(self, stream_or_blackout, client=None):
         self.client = client
@@ -53,7 +52,7 @@ class StudentGui(Window):
         def show_photo(img):
             self.add_or_change_photo(img, "stream")
             self.start_function(self.update_img_label, 0, "stream", label)
-        threading.Thread(target=client.listen_multicast, args=(65000, self.client.get_image, show_photo)).start()
+        threading.Thread(target=client.listen_multicast, args=(64998, self.client.get_image, show_photo)).start()
 
     def blackout(self):
         label = self.create_text_label("QUIET", bg="black", fg="white", font=("Calibari", 100))
@@ -76,5 +75,6 @@ if __name__ == "__main__":
         data = queue.get()
         window = StudentGui(data)
         threading.Thread(target=check_when_to_close_window, args=[queue, window])
+        window.start()
 
 

@@ -1,12 +1,8 @@
 from Client import Client
-import re
 import win32api
 import win32con
 from PIL import Image
 from io import BytesIO
-import queue
-import time
-import math
 import socket
 import struct
 
@@ -43,7 +39,7 @@ class StudentClient(Client):
             self.student_server.change_screenshot_size((1024,576))
         elif data == "normal screen":
             self.student_server.change_screenshot_size((256, 144))
-        elif re.search("[0-9]*,[0-9]*", data[1:-1]):
+        elif data[0] == '(' and data[-1] == ')':
             data = data[1:-1].split(',')
             win32api.SetCursorPos((int(data[0])*2, int(data[1])*2))
         elif data.startswith("press"):
@@ -60,7 +56,10 @@ class StudentClient(Client):
     def get_img(self, data, addr, handle_img):
         len = int(data[:10].decode())
         img = data[10:len + 10]
-        handle_img(Image.open(BytesIO(img)))
+        try:
+            handle_img(Image.open(BytesIO(img)))
+        except:
+            pass
 
     def get_public_key(self):
         multicast_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
