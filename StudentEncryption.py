@@ -3,7 +3,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
-import time
+
 class StudentEncryption:
     def __init__(self):
         self.key = get_random_bytes(32)

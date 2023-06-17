@@ -31,7 +31,6 @@ class TeacherGui(Window):
         self.big_screen_client = None
         self.add_or_change_photo(Image.open("default.png"), "default")
         self.big_screen = self.create_img_label("default")
-        self.big_screen_addr = None
 
         def send_location(event):
             self.server.send_coordinates(self.big_screen_client,event.x,event.y)
@@ -185,6 +184,7 @@ class TeacherGui(Window):
             i()
         self.replace_widget(self.buttons[0],self.unused_buttons[0])
         self.buttons[0], self.unused_buttons[0] = self.unused_buttons[0], self.buttons[0]
+
     def release_blackout_all(self):
         for i in self.release_blackout_list:
             i()

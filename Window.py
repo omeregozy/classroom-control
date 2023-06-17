@@ -1,12 +1,11 @@
 from tkinter import *
 from tkinter import filedialog
-from PIL import ImageTk, Image
+from PIL import ImageTk
 #from tkinter.ttk import *
-import time
 
 
 class Window:
-    def __init__(self, width=None, height=None, resizable=True, zoomed=False, title="Studnt Program", icon=None):
+    def __init__(self, width=None, height=None, resizable=True, zoomed=False, title="Studnt Program"):
         self.photos = {}
         self.root = Tk()
         if zoomed:
@@ -20,16 +19,6 @@ class Window:
         if root is None:
             root = self.root
         return Label(root, text=text, **kwargs)
-
-    def create_entry(self, root=None):
-        if root is None:
-            root = self.root
-        return Entry(root)
-
-    def create_text_entry(self, width, height, root=None):
-        if root is None:
-            root = self.root
-        return Text(root, width=width, height=height)
 
     def create_img_label(self, photo, root = None):
         if root is None:
@@ -77,11 +66,6 @@ class Window:
         menu.menu.add_command(label=text, command=func)
         menu.update()
 
-    def remove_button_to_menu(self, menu, button):
-        if type(button) == str:
-            button = menu.menu.index(button)
-        menu.menu.deletecommand(button)
-
     def change_button_in_menu(self, menu, button, text, func):
         if type(button) == str:
             button = menu.menu.index(button)
@@ -111,8 +95,6 @@ class Window:
     def start_function(self, func, ms=0, *args):
         self.root.after(ms, func, *args)
 
-    def open_file_dialog(self):
-        return filedialog.askopenfilename()
 
     def update(self):
         self.root.update()

@@ -39,22 +39,15 @@ class Client:
             self.multicast_client.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         while True:
             data, addr = self.multicast_client.recvfrom(buffer_size)
-            print(addr)
             if addr[0] != socket.gethostbyname(socket.gethostname()):
                 handle_msg(data, addr[0], *args)
 
     def open_tcp_connection(self):
         self.tcp_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tcp_client.connect((self.remote_ip, self.tcp_port))
-        print("connected")
 
     def listen_tcp(self, buffer_size, handle_msg):
         if self.tcp_client is None:
             self.open_tcp_connection()
         while True:
             handle_msg(self.tcp_client.recv(buffer_size))
-
-    def send_tcp(self, msg):
-        if self.tcp_client is None:
-            self.open_tcp_connection()
-        self.tcp_client.send(msg)

@@ -3,7 +3,6 @@ import threading
 import win32gui
 import win32con
 import win32api
-import time
 import queue
 from StudentClient import StudentClient
 from StudentServer import StudentServer
@@ -43,8 +42,8 @@ class StudentGui(Window):
 
     def close(self):
         self.window_exist = False
-        time.sleep(0.5)
-        self.start_function(self.destroy, 0)
+        self.start_function(self.destroy, 500)
+        del self
 
     def show_stream(self):
         label = self.create_img_label("default")

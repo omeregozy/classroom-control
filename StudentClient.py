@@ -19,8 +19,9 @@ class StudentClient(Client):
 
     def add_server(self,server):
         self.student_server = server
+
     def listen_to_teacher(self, data):
-        data = data.decode().lstrip('0')
+        data = self.encryption.decrypt(data).decode()
         if data == "stream":
             self.student_server.change_screenshot_size((2048, 1152))
             self.student_server.stream_func = self.student_server.send_multicast
@@ -54,6 +55,7 @@ class StudentClient(Client):
                 win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP, 0, 0,0,0)
 
     def get_img(self, data, addr, handle_img):
+        data = self.encryption.decrypt(data)
         len = int(data[:10].decode())
         img = data[10:len + 10]
         try:
@@ -68,4 +70,5 @@ class StudentClient(Client):
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
         multicast_client.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         data, addr = multicast_client.recvfrom(128)
+        multicast_client.close()
         return data, addr
