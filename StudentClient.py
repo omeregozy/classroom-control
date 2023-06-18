@@ -17,12 +17,17 @@ class StudentClient(Client):
         self.tcp_client.send(encryption.encrypt_key(key))
         self.queue = queue
         self.student_server = None
+        self.window = None
 
     def add_server(self,server):
         self.student_server = server
 
+    def add_window(self,window):
+        self.window = window
+
     def listen_to_teacher(self, data):
         data = self.encryption.decrypt_message(data).decode()
+        print(data)
         if data == "stream":
             self.student_server.change_screenshot_size((2048, 1152))
             self.student_server.stream_func = self.student_server.send_multicast
@@ -32,11 +37,11 @@ class StudentClient(Client):
         elif data == "start listening":
              self.queue.put("stream")
         elif data == "stop listening":
-            self.queue.put("close")
-        elif data == "blackout":
+            self.window.close()
+        elif data == "black out":
             self.queue.put("blackout")
-        elif data == "stop blackout":
-            self.queue.put("close")
+        elif data == "release blackout":
+            self.window.close()
         elif data == "full screen":
             self.student_server.change_screenshot_size((1024,576))
         elif data == "normal screen":

@@ -8,6 +8,7 @@ from StudentClient import StudentClient
 from StudentServer import StudentServer
 from StudentEncryption import StudentEncryption
 import time
+from PIL import Image
 
 class StudentGui(Window):
     def __init__(self, stream_or_blackout, client=None):
@@ -25,8 +26,9 @@ class StudentGui(Window):
             self.blackout()
         else:
             self.close()
-        self.start_function(self.close,)
+        self.start_function(self.close,20000)
         self.start_function(self.remain_in_the_front,5)
+        self.add_or_change_photo(Image.open("default.png"), "default")
 
     def remain_in_the_front(self):
         def check_if_in_the_front():
@@ -53,16 +55,19 @@ class StudentGui(Window):
         def show_photo(img):
             self.add_or_change_photo(img, "stream")
             self.start_function(self.update_img_label, 0, "stream", label)
-        threading.Thread(target=client.listen_multicast, args=(64998, self.client.get_image, show_photo)).start()
+        threading.Thread(target=self.client.listen_multicast, args=(64998, self.client.get_image, show_photo)).start()
 
     def blackout(self):
         label = self.create_text_label("QUIET", bg="black", fg="white", font=("Calibari", 100))
         label.place(relx=0.4, rely=0.4)
 
-def check_when_to_close_window(queue, window):
-    data = queue.get()
+
+def check_when_to_close_window(queue1, window):
+    data = queue1.get()
+    print(data)
     if data == "close":
         window.close()
+
 
 if __name__ == "__main__":
     client_queue = queue.Queue()
@@ -75,8 +80,8 @@ if __name__ == "__main__":
     threading.Thread(target=server.send_screenshots).start()
     while True:
         data = client_queue.get()
-        window = StudentGui(data)
-        threading.Thread(target=check_when_to_close_window, args=[queue, window])
+        window = StudentGui(data, client)
+        client.add_window(window)
         window.start()
 
 

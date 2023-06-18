@@ -20,4 +20,7 @@ class StudentEncryption:
         return self.cipher.encrypt(data)
 
     def decrypt_message(self, data):
-        return unpad(self.cipher.decrypt(data),AES.block_size)
+        try:
+            return unpad(self.cipher.decrypt(data),AES.block_size)
+        except:
+            return self.cipher.decrypt(data)
