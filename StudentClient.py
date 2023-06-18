@@ -22,7 +22,7 @@ class StudentClient(Client):
         self.student_server = server
 
     def listen_to_teacher(self, data):
-        data = self.encryption.decrypt(data).decode()
+        data = self.encryption.decrypt_message(data).decode()
         if data == "stream":
             self.student_server.change_screenshot_size((2048, 1152))
             self.student_server.stream_func = self.student_server.send_multicast

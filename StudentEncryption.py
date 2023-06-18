@@ -15,7 +15,9 @@ class StudentEncryption:
         return cipher.encrypt(self.key)
 
     def encrypt_message(self, data):
-        return self.cipher.encrypt(pad(data,AES.block_size))
+        if len(data)%16 != 0:
+            data = pad(data,AES.block_size)
+        return self.cipher.encrypt(data)
 
     def decrypt_message(self, data):
         return unpad(self.cipher.decrypt(data),AES.block_size)

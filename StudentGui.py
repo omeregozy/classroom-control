@@ -7,6 +7,7 @@ import queue
 from StudentClient import StudentClient
 from StudentServer import StudentServer
 from StudentEncryption import StudentEncryption
+import time
 
 class StudentGui(Window):
     def __init__(self, stream_or_blackout, client=None):
@@ -24,6 +25,7 @@ class StudentGui(Window):
             self.blackout()
         else:
             self.close()
+        self.start_function(self.close,)
         self.start_function(self.remain_in_the_front,5)
 
     def remain_in_the_front(self):
@@ -69,9 +71,10 @@ if __name__ == "__main__":
     server = StudentServer(client.remote_ip, encryption)
     client.add_server(server)
     threading.Thread(target=client.listen_tcp, args=[16,client.listen_to_teacher]).start()
+    time.sleep(1)
     threading.Thread(target=server.send_screenshots).start()
-    while not client.tcp_client.closed:
-        data = queue.get()
+    while True:
+        data = client_queue.get()
         window = StudentGui(data)
         threading.Thread(target=check_when_to_close_window, args=[queue, window])
         window.start()

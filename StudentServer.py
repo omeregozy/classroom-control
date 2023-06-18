@@ -37,8 +37,8 @@ def get_screenshots(conn):
             img_file = bio.getvalue()
             bio.truncate(0)
             length = len(img_file)
-            if length < 653998:
-                conn.send_bytes(str(len(img_file)).zfill(10).encode() + img_file[::-1].zfill(653998)[::-1])
+            if length < 65398:
+                conn.send_bytes(str(len(img_file)).zfill(10).encode() + img_file[::-1].zfill(65398)[::-1])
                 if quality < 100 and length < 55000:
                     quality += 5
             else:
@@ -61,7 +61,7 @@ class StudentServer(Server):
         Process(target=get_screenshots, args=[conn2]).start()
         while True:
             if self.stream_func is self.send_to_teacher:
-                self.stream_func(self.encryption.encrypt(self.conn.recv_bytes()))
+                self.stream_func(self.encryption.encrypt_message(self.conn.recv_bytes()))
             else:
                 self.stream_func(self.conn.recv_bytes())
 
