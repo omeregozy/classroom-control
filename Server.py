@@ -22,7 +22,8 @@ class Server:
 
     def open_tcp(self):
         self.tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.tcp_server.bind((socket.gethostname(), TCP_PORT))
+        self.tcp_server.bind((socket.gethostbyname((socket.gethostname())), TCP_PORT))
+        print((socket.gethostbyname(socket.gethostname()), TCP_PORT))
         self.tcp_server.listen()
 
     def open_udp(self):
