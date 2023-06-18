@@ -61,7 +61,8 @@ class TeacherServer(Server):
                 if sock == self.tcp_server:
                     client_sock, client_address = sock.accept()
                     try:
-                        self.encryption.add_student(client_address, client_sock.recv(128))
+                        print("student")
+                        self.encryption.add_student(client_address, client_sock.recv(450))
                         sockets_list.append(client_sock)
                         self.clients_list.append(client_sock)
                         handle_new_client(client_sock)
