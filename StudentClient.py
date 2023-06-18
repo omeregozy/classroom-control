@@ -1,4 +1,4 @@
-from Client import Client
+from Client import Client, MULTICAST_GROUP
 import win32api
 import win32con
 from PIL import Image
@@ -9,6 +9,7 @@ import struct
 
 class StudentClient(Client):
     def __init__(self, queue, encryption):
+        self.multicast_ip = MULTICAST_GROUP
         key, self.remote_ip = self.get_public_key()
         super().__init__(self.remote_ip)
         super().open_tcp_connection()
@@ -69,6 +70,6 @@ class StudentClient(Client):
         group = socket.inet_aton(self.multicast_ip)
         mreq = struct.pack('4sL', group, socket.INADDR_ANY)
         multicast_client.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-        data, addr = multicast_client.recvfrom(128)
+        data, addr = multicast_client.recvfrom(450)
         multicast_client.close()
         return data, addr

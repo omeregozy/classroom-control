@@ -16,7 +16,7 @@ class Client:
         self.udp_client = None
         self.multicast_client = None
         self.local_ip = socket.gethostbyname(socket.gethostname())
-        self.remote_ip = remote_ip
+        self.remote_ip = remote_ip[0]
         self.multicast_port = MULTICAST_PORT
         self.udp_port = UDP_PORT
         self.tcp_port = TCP_PORT
@@ -44,6 +44,7 @@ class Client:
 
     def open_tcp_connection(self):
         self.tcp_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print((self.remote_ip, self.tcp_port))
         self.tcp_client.connect((self.remote_ip, self.tcp_port))
 
     def listen_tcp(self, buffer_size, handle_msg):
